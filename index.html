@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- ============================================
+       META — Update these as needed
+  ============================================ -->
+  <title>Lumin Private Limited – Mobile Game Studio</title>
+  <meta name="description" content="Lumin Private Limited – Mobile game studio crafting thrilling games on Google Play." />
+
+  <!-- Fonts: Press Start 2P (pixel/retro) + Outfit (clean body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    /* =============================================
+       CSS VARIABLES
+    ============================================= */
+    :root {
+      --bg:         #07080f;
+      --surface:    #0d0f1c;
+      --border:     #1e2140;
+      --magenta:    #ff006e;      /* primary neon accent */
+      --lime:       #c8ff00;      /* secondary neon accent */
+      --cyan:       #00e5ff;      /* tertiary */
+      --text:       #e8eaf6;
+      --muted:      #6c7293;
+      --font-pixel: 'Press Start 2P', monospace;
+      --font-body:  'Outfit', sans-serif;
+      --radius:     4px;          /* sharp pixel corners */
+    }
+
+    /* =============================================
+       RESET & BASE
+    ============================================= */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 1.7;
+      overflow-x: hidden;
+      cursor: crosshair;        /* retro crosshair cursor */
+    }
+
+    a { color: var(--magenta); text-decoration: none; transition: opacity .2s; }
+    a:hover { opacity: .75; }
+    img { max-width: 100%; display: block; }
+
+    /* ── Scanline overlay (CRT effect) ── */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9999;
+      background: repeating-linear-gradient(
+        0deg,
+        rgba(0,0,0,0) 0px,
+        rgba(0,0,0,0) 2px,
+        rgba(0,0,0,.07) 2px,
+        rgba(0,0,0,.07) 4px
+      );
+    }
+
+    /* =============================================
+       UTILITY
+    ============================================= */
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+    .section    { padding: 100px 0; }
+
+    /* Pixel-border box (4-side outline with gap) */
+    .px-box {
+      position: relative;
+      border: 2px solid var(--magenta);
+      box-shadow: 4px 4px 0 var(--magenta);
+    }
+
+    .section-eyebrow {
+      font-family: var(--font-pixel);
+      font-size: .5rem;
+      letter-spacing: .2em;
+      color: var(--lime);
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-eyebrow::before {
+      content: '▶';
+      color: var(--magenta);
+      animation: blink-cursor 1s step-start infinite;
+    }
+
+    .section-title {
+      font-family: var(--font-pixel);
+      font-size: clamp(1.2rem, 3vw, 2rem);
+      line-height: 1.5;
+      color: var(--text);
+      margin-bottom: 20px;
+      text-shadow: 3px 3px 0 var(--magenta);
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 40px;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 2px;
+      background: linear-gradient(90deg, var(--magenta), transparent);
+    }
+    .divider-diamond {
+      width: 8px; height: 8px;
+      background: var(--magenta);
+      transform: rotate(45deg);
+      flex-shrink: 0;
+    }
+
+    /* Neon glow text */
+    .glow-magenta { text-shadow: 0 0 8px var(--magenta), 0 0 24px var(--magenta); }
+    .glow-lime    { text-shadow: 0 0 8px var(--lime), 0 0 24px var(--lime); }
+    .glow-cyan    { text-shadow: 0 0 8px var(--cyan), 0 0 24px var(--cyan); }
+
+    /* =============================================
+       STAR CANVAS — animated background
+    ============================================= */
+    #star-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* =============================================
+       NAV BAR
+    ============================================= */
+    #navbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      background: rgba(7, 8, 15, 0.92);
+      backdrop-filter: blur(10px);
+      border-bottom: 2px solid var(--magenta);
+      padding: 16px 0;
+    }
+
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-logo {
+      font-family: var(--font-pixel);
+      font-size: .75rem;
+      color: var(--lime);
+      letter-spacing: .06em;
+      text-shadow: 0 0 10px var(--lime);
+    }
+    .nav-logo span { color: var(--magenta); text-shadow: 0 0 10px var(--magenta); }
+
+    /* Blinking cursor after logo */
+    .nav-logo::after {
+      content: '_';
+      animation: blink-cursor 1s step-start infinite;
+      color: var(--magenta);
+    }
+    @keyframes blink-cursor {
+      0%, 100% { opacity: 1; } 50% { opacity: 0; }
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 28px;
+      list-style: none;
+    }
+    .nav-links a {
+      font-family: var(--font-pixel);
+      font-size: .5rem;
+      color: var(--muted);
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      transition: color .2s, text-shadow .2s;
+    }
+    .nav-links a:hover {
+      color: var(--lime);
+      text-shadow: 0 0 8px var(--lime);
+      opacity: 1;
+    }
+
+    /* Hamburger */
+    #nav-toggle {
+      display: none;
+      flex-direction: column;
+      gap: 6px;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 4px;
+    }
+    #nav-toggle span {
+      display: block;
+      width: 22px; height: 2px;
+      background: var(--magenta);
+    }
+
+    /* Mobile open */
+    #navbar.open .nav-links {
+      display: flex;
+      flex-direction: column;
+      position: absolute;
+      top: 100%; left: 0; right: 0;
+      background: rgba(7,8,15,.97);
+      border-bottom: 2px solid var(--magenta);
+      padding: 20px 24px;
+      gap: 18px;
+    }
+
+    /* =============================================
+       HERO
+    ============================================= */
+    #hero {
+      min-height: 100vh;
+      padding-top: 90px;
+      display: flex;
+      align-items: center;
+      position: relative;
+      z-index: 1;
+      overflow: hidden;
+    }
+
+    /* Animated gradient orbs */
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      pointer-events: none;
+    }
+    .orb-1 {
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(255,0,110,.15), transparent 70%);
+      top: -100px; right: -100px;
+      animation: driftA 10s ease-in-out infinite alternate;
+    }
+    .orb-2 {
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(200,255,0,.1), transparent 70%);
+      bottom: 0; left: -80px;
+      animation: driftB 14s ease-in-out infinite alternate;
+    }
+    @keyframes driftA { from { transform: translate(0,0); } to { transform: translate(-40px, 40px); } }
+    @keyframes driftB { from { transform: translate(0,0); } to { transform: translate(30px,-30px); } }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      max-width: 760px;
+    }
+
+    /* INSERT COIN badge */
+    .hero-insert {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--font-pixel);
+      font-size: .5rem;
+      letter-spacing: .12em;
+      color: var(--lime);
+      border: 2px solid var(--lime);
+      padding: 8px 16px;
+      margin-bottom: 32px;
+      animation: fadeUp .6s ease both, glow-pulse 2s ease-in-out infinite alternate;
+    }
+    @keyframes glow-pulse {
+      from { box-shadow: 0 0 6px var(--lime); }
+      to   { box-shadow: 0 0 18px var(--lime), 0 0 36px rgba(200,255,0,.3); }
+    }
+
+    .coin-icon { animation: spin-coin 2s linear infinite; display: inline-block; }
+    @keyframes spin-coin {
+      0%,100% { transform: scaleX(1); }
+      50%      { transform: scaleX(0.1); }
+    }
+
+    .hero-title {
+      font-family: var(--font-pixel);
+      font-size: clamp(1.6rem, 5vw, 3.2rem);
+      line-height: 1.4;
+      margin-bottom: 24px;
+      animation: fadeUp .7s .1s ease both;
+    }
+    .hero-title .line-1 { color: var(--text); display: block; }
+    .hero-title .line-2 {
+      color: var(--magenta);
+      display: block;
+      text-shadow: 0 0 12px var(--magenta), 0 0 40px rgba(255,0,110,.4);
+    }
+    .hero-title .line-3 { color: var(--lime); display: block; font-size: .7em; }
+
+    .hero-sub {
+      font-size: 1.05rem;
+      font-weight: 400;
+      color: var(--muted);
+      max-width: 500px;
+      margin-bottom: 40px;
+      animation: fadeUp .7s .2s ease both;
+      border-left: 3px solid var(--magenta);
+      padding-left: 16px;
+    }
+
+    /* HP / XP bar decoration */
+    .hero-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 36px;
+      font-family: var(--font-pixel);
+      font-size: .45rem;
+      color: var(--muted);
+      animation: fadeUp .7s .25s ease both;
+    }
+    .hp-bar-track {
+      flex: 1;
+      height: 8px;
+      background: var(--border);
+      border: 1px solid var(--magenta);
+      position: relative;
+      max-width: 200px;
+    }
+    .hp-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--magenta), var(--lime));
+      animation: fill-bar 1.5s .5s ease forwards;
+      width: 0%;
+    }
+    @keyframes fill-bar { to { width: 87%; } }
+
+    .hero-cta {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      animation: fadeUp .7s .3s ease both;
+    }
+
+    /* ── BUTTONS ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 24px;
+      font-family: var(--font-pixel);
+      font-size: .55rem;
+      letter-spacing: .08em;
+      cursor: pointer;
+      border: none;
+      transition: all .2s;
+      text-transform: uppercase;
+      position: relative;
+    }
+    /* Pixel shadow trick */
+    .btn::after {
+      content: '';
+      position: absolute;
+      bottom: -4px; right: -4px;
+      width: 100%; height: 100%;
+      z-index: -1;
+    }
+
+    .btn-magenta {
+      background: var(--magenta);
+      color: #fff;
+    }
+    .btn-magenta::after { background: rgba(255,0,110,.4); }
+    .btn-magenta:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: 4px 4px 0 rgba(255,0,110,.5);
+      text-shadow: 0 0 8px #fff;
+      opacity: 1; color: #fff;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--lime);
+      border: 2px solid var(--lime);
+    }
+    .btn-ghost:hover {
+      background: rgba(200,255,0,.08);
+      transform: translate(-2px,-2px);
+      box-shadow: 4px 4px 0 var(--lime);
+      opacity: 1; color: var(--lime);
+    }
+
+    /* =============================================
+       ABOUT
+    ============================================= */
+    #about {
+      background: var(--surface);
+      border-top: 2px solid var(--border);
+      border-bottom: 2px solid var(--border);
+      position: relative;
+      z-index: 1;
+    }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 64px;
+      align-items: center;
+    }
+
+    .about-text p {
+      color: var(--muted);
+      margin-bottom: 16px;
+      font-size: .95rem;
+    }
+
+    /* Stat cards — pixel style */
+    .about-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+    .stat-card {
+      border: 2px solid var(--border);
+      padding: 24px 20px;
+      position: relative;
+      transition: border-color .2s, transform .2s;
+      background: var(--bg);
+    }
+    /* Corner accent */
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: -2px; right: -2px;
+      width: 16px; height: 16px;
+      background: var(--magenta);
+      clip-path: polygon(100% 0, 0 0, 100% 100%);
+    }
+    .stat-card:hover {
+      border-color: var(--magenta);
+      transform: translate(-3px,-3px);
+      box-shadow: 3px 3px 0 var(--magenta);
+    }
+
+    .stat-number {
+      font-family: var(--font-pixel);
+      font-size: 1.5rem;
+      color: var(--magenta);
+      text-shadow: 0 0 12px var(--magenta);
+      line-height: 1;
+      margin-bottom: 10px;
+    }
+    .stat-label {
+      font-size: .75rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    /* =============================================
+       PLAY STORE SECTION — hero-style CTA
+    ============================================= -->
+    #playstore {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    /* Animated grid background */
+    #playstore::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,0,110,.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,0,110,.06) 1px, transparent 1px);
+      background-size: 40px 40px;
+      animation: grid-scroll 8s linear infinite;
+    }
+    @keyframes grid-scroll {
+      from { background-position: 0 0; }
+      to   { background-position: 40px 40px; }
+    }
+
+    .playstore-inner {
+      position: relative;
+      z-index: 1;
+      max-width: 640px;
+      margin: 0 auto;
+    }
+
+    .playstore-icon {
+      font-size: 4rem;
+      margin-bottom: 24px;
+      display: inline-block;
+      animation: bounce-icon 2s ease-in-out infinite;
+    }
+    @keyframes bounce-icon {
+      0%,100% { transform: translateY(0) rotate(0deg); }
+      50%      { transform: translateY(-12px) rotate(5deg); }
+    }
+
+    .playstore-title {
+      font-family: var(--font-pixel);
+      font-size: clamp(1rem, 3vw, 1.5rem);
+      color: var(--text);
+      line-height: 1.5;
+      margin-bottom: 16px;
+    }
+    .playstore-title span { color: var(--lime); text-shadow: 0 0 10px var(--lime); }
+
+    .playstore-sub {
+      font-size: .95rem;
+      color: var(--muted);
+      margin-bottom: 36px;
+    }
+
+    /* Big Play Store button */
+    .play-big-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 16px;
+      background: #fff;
+      color: #000;
+      padding: 18px 32px;
+      border: 3px solid var(--lime);
+      font-family: var(--font-pixel);
+      font-size: .6rem;
+      letter-spacing: .1em;
+      transition: all .25s;
+      position: relative;
+      cursor: pointer;
+    }
+    .play-big-btn::after {
+      content: '';
+      position: absolute;
+      bottom: -6px; right: -6px;
+      width: 100%; height: 100%;
+      background: var(--lime);
+      z-index: -1;
+      transition: all .25s;
+    }
+    .play-big-btn:hover {
+      transform: translate(-4px,-4px);
+      opacity: 1;
+      color: #000;
+      box-shadow: none;
+    }
+    .play-big-btn:hover::after {
+      bottom: -10px; right: -10px;
+    }
+
+    .play-big-btn svg { flex-shrink: 0; }
+
+    /* Achievement unlocked toast */
+    .achievement {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 28px;
+      background: var(--surface);
+      border: 2px solid var(--lime);
+      padding: 10px 18px;
+      font-family: var(--font-pixel);
+      font-size: .45rem;
+      color: var(--lime);
+      letter-spacing: .1em;
+      animation: slide-in-toast 1s 1.5s ease both;
+    }
+    @keyframes slide-in-toast {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* =============================================
+       CONTACT
+    ============================================= */
+    #contact {
+      background: var(--surface);
+      border-top: 2px solid var(--border);
+      position: relative;
+      z-index: 1;
+    }
+
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 64px;
+      align-items: start;
+    }
+
+    .contact-info p { color: var(--muted); font-size: .95rem; margin-bottom: 28px; }
+
+    .contact-links { display: flex; flex-direction: column; gap: 16px; }
+
+    .contact-link-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      color: var(--muted);
+      font-size: .88rem;
+      font-weight: 500;
+      transition: color .2s;
+    }
+    .contact-link-item:hover { color: var(--lime); opacity: 1; }
+
+    .contact-icon {
+      width: 40px; height: 40px;
+      border: 2px solid var(--magenta);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+      position: relative;
+      background: var(--bg);
+    }
+    /* Pixel corner on icon */
+    .contact-icon::before {
+      content: '';
+      position: absolute;
+      top: -2px; right: -2px;
+      width: 8px; height: 8px;
+      background: var(--magenta);
+    }
+
+    /* Contact form */
+    .contact-form {
+      background: var(--bg);
+      border: 2px solid var(--magenta);
+      box-shadow: 6px 6px 0 var(--magenta);
+      padding: 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .form-header {
+      font-family: var(--font-pixel);
+      font-size: .6rem;
+      color: var(--magenta);
+      letter-spacing: .1em;
+      margin-bottom: 8px;
+      text-shadow: 0 0 8px var(--magenta);
+    }
+
+    .form-field { display: flex; flex-direction: column; gap: 6px; }
+
+    .form-field label {
+      font-family: var(--font-pixel);
+      font-size: .42rem;
+      color: var(--lime);
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .form-field input,
+    .form-field textarea {
+      background: var(--surface);
+      border: 2px solid var(--border);
+      padding: 12px 14px;
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: .9rem;
+      outline: none;
+      transition: border-color .2s;
+      resize: none;
+      border-radius: 0;  /* pixel style — no rounding */
+    }
+    .form-field input:focus,
+    .form-field textarea:focus { border-color: var(--magenta); }
+
+    .form-note { font-size: .72rem; color: var(--muted); }
+
+    /* =============================================
+       FOOTER
+    ============================================= -->
+    footer {
+      background: var(--bg);
+      border-top: 2px solid var(--magenta);
+      padding: 28px 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .footer-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .footer-logo {
+      font-family: var(--font-pixel);
+      font-size: .6rem;
+      color: var(--lime);
+      text-shadow: 0 0 8px var(--lime);
+    }
+
+    .footer-copy {
+      font-size: .75rem;
+      color: var(--muted);
+    }
+
+    .footer-links { display: flex; gap: 20px; }
+    .footer-links a {
+      font-family: var(--font-pixel);
+      font-size: .42rem;
+      color: var(--muted);
+      letter-spacing: .08em;
+    }
+    .footer-links a:hover { color: var(--magenta); opacity: 1; }
+
+    /* =============================================
+       ANIMATIONS
+    ============================================= */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(22px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Floating pixel particles */
+    .pixel-particle {
+      position: fixed;
+      width: 4px; height: 4px;
+      pointer-events: none;
+      z-index: 0;
+      animation: float-up linear infinite;
+      opacity: 0;
+    }
+    @keyframes float-up {
+      0%   { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+      10%  { opacity: .6; }
+      90%  { opacity: .3; }
+      100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+    }
+
+    /* =============================================
+       RESPONSIVE
+    ============================================= */
+    @media (max-width: 768px) {
+      .section { padding: 64px 0; }
+      .nav-links { display: none; }
+      #nav-toggle { display: flex; }
+
+      .about-grid,
+      .contact-grid { grid-template-columns: 1fr; gap: 40px; }
+      .about-stats  { grid-template-columns: 1fr 1fr; }
+
+      .hero-title { font-size: 1.3rem; }
+      .footer-inner { flex-direction: column; text-align: center; }
+
+      .contact-form { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- =============================================
+       ANIMATED STAR FIELD CANVAS
+  ============================================= -->
+  <canvas id="star-canvas"></canvas>
+
+  <!-- =============================================
+       NAV BAR
+  ============================================= -->
+  <nav id="navbar">
+    <div class="container nav-inner">
+
+      <a href="javascript:void(0)" class="nav-logo" onclick="showMain()">
+        LUMIN<span>_</span>PVT
+      </a>
+
+      <ul class="nav-links" id="nav-links">
+        <li><a href="javascript:void(0)" onclick="scrollToSection('about'); closeMenu()">About</a></li>
+        <li><a href="javascript:void(0)" onclick="scrollToSection('playstore'); closeMenu()">Games</a></li>
+        <li><a href="javascript:void(0)" onclick="scrollToSection('contact'); closeMenu()">Contact</a></li>
+        <li><a href="https://www.freeprivacypolicy.com/live/6e8a5f9b-8c82-4f8a-83a5-233ac6c18c60" target="_blank" onclick="closeMenu()">Privacy</a></li>
+      </ul>
+
+      <button id="nav-toggle" aria-label="Toggle menu" onclick="toggleMenu()">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+
+  <!-- =============================================
+       MAIN CONTENT
+  ============================================= -->
+  <div id="main-content">
+
+    <!-- HERO -->
+    <section id="hero">
+      <!-- Ambient orbs -->
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+
+      <div class="container">
+        <div class="hero-content">
+
+          <!-- INSERT COIN badge -->
+          <div class="hero-insert">
+            <span class="coin-icon">🪙</span>
+            INSERT COIN TO START
+          </div>
+
+          <h1 class="hero-title">
+            <span class="line-1">WELCOME TO</span>
+            <span class="line-2">LUMIN</span>
+            <span class="line-3">PRIVATE LIMITED</span>
+          </h1>
+
+          <p class="hero-sub">
+            We build mobile games that pull you in and won't let go.
+            Discover our titles on Google Play — crafted with passion from Pakistan.
+          </p>
+
+          <!-- HP bar decoration -->
+          <div class="hero-bar">
+            <span>PWR</span>
+            <div class="hp-bar-track"><div class="hp-bar-fill"></div></div>
+            <span>87%</span>
+          </div>
+
+          <div class="hero-cta">
+            <a href="https://play.google.com/store/apps/developer?id=Lumin+Private+Limited"
+               target="_blank" class="btn btn-magenta">
+              🎮 OUR GAMES
+            </a>
+            <a href="javascript:void(0)" onclick="scrollToSection('about')" class="btn btn-ghost">
+              LEARN MORE
+            </a>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ABOUT -->
+    <section id="about" class="section">
+      <div class="container">
+        <div class="about-grid">
+
+          <!-- Left: text -->
+          <div class="about-text">
+            <div class="section-eyebrow">About Us</div>
+            <h2 class="section-title">PIXEL PERFECT<br/>GAME STUDIO</h2>
+            <div class="divider"><div class="divider-diamond"></div></div>
+
+            <!-- ── UPDATE TEXT AS NEEDED ── -->
+            <p>
+              Lumin Private Limited is an independent mobile game studio from Pakistan,
+              dedicated to creating engaging, high-quality gaming experiences for players
+              all around the world.
+            </p>
+            <p>
+              Every game we build is fueled by creativity, bold ideas, and a relentless
+              drive to make something players will truly enjoy.
+            </p>
+
+            <a href="https://play.google.com/store/apps/developer?id=Lumin+Private+Limited"
+               target="_blank" class="btn btn-magenta" style="margin-top: 28px; width: fit-content;">
+              ▶ ALL GAMES ON PLAY STORE
+            </a>
+          </div>
+
+          <!-- Right: stat cards — UPDATE numbers as studio grows -->
+          <div class="about-stats">
+            <div class="stat-card">
+              <div class="stat-number">PK</div>
+              <div class="stat-label">Based in Pakistan</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number">∞</div>
+              <div class="stat-label">Games in Pipeline</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number">🌍</div>
+              <div class="stat-label">Global Players</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number">100%</div>
+              <div class="stat-label">Indie Studio</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+
+    <!-- PLAY STORE CTA SECTION -->
+    <section id="playstore" class="section">
+      <div class="container">
+        <div class="playstore-inner">
+
+          <div class="playstore-icon">🕹️</div>
+
+          <h2 class="playstore-title">
+            EXPLORE ALL GAMES BY<br/>
+            <span>LUMIN PRIVATE LIMITED</span>
+          </h2>
+
+          <p class="playstore-sub">
+            All our published games are available on Google Play.
+            Tap below to browse our full collection — more titles dropping soon!
+          </p>
+
+          <!-- BIG Google Play button — entire developer page -->
+          <a href="https://play.google.com/store/apps/developer?id=Lumin+Private+Limited"
+             target="_blank" class="play-big-btn">
+            <!-- Google Play logo SVG -->
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="#000">
+              <path d="M3.18 23.76c.34.19.73.24 1.1.14l11.5-11.5-2.88-2.88L3.18 23.76zM20.7 10.37l-2.87-1.63-3.24 3.24 3.24 3.24 2.9-1.65c.83-.47.83-1.74-.03-2.2zM2.01 1.04C1.7 1.37 1.5 1.87 1.5 2.51v19.01c0 .64.2 1.14.52 1.47l.08.07 10.64-10.64v-.25L2.09.97l-.08.07zM14.78 8.62L3.18.27c-.37-.1-.76-.05-1.1.14l9.82 9.82 2.88-2.88z"/>
+            </svg>
+            VIEW ON GOOGLE PLAY
+          </a>
+
+          <br/>
+
+          <!-- Achievement badge -->
+          <div class="achievement">
+            🏆 ACHIEVEMENT UNLOCKED — FOUND OUR STUDIO!
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+
+    <!-- CONTACT -->
+    <section id="contact" class="section">
+      <div class="container">
+        <div class="contact-grid">
+
+          <!-- Left -->
+          <div class="contact-info">
+            <div class="section-eyebrow">Contact</div>
+            <h2 class="section-title">SEND A<br/>MESSAGE</h2>
+            <div class="divider"><div class="divider-diamond"></div></div>
+
+            <p>
+              Got feedback, a partnership idea, or just want to talk games?
+              We're all ears — drop us a line anytime.
+            </p>
+
+            <div class="contact-links">
+              <!-- ── UPDATE EMAIL IF NEEDED ── -->
+              <a href="mailto:arifdreamadnan@gmail.com" class="contact-link-item">
+                <span class="contact-icon">✉️</span>
+                arifdreamadnan@gmail.com
+              </a>
+
+              <a href="https://play.google.com/store/apps/developer?id=Lumin+Private+Limited"
+                 target="_blank" class="contact-link-item">
+                <span class="contact-icon">🎮</span>
+                Lumin Pvt Ltd on Play Store
+              </a>
+
+              <a href="https://www.freeprivacypolicy.com/live/6e8a5f9b-8c82-4f8a-83a5-233ac6c18c60"
+                 target="_blank" class="contact-link-item">
+                <span class="contact-icon">📄</span>
+                Privacy Policy
+              </a>
+
+              <div class="contact-link-item">
+                <span class="contact-icon">📍</span>
+                Pakistan
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: form -->
+          <!-- NOTE: Opens user's email client on submit.
+               For a real backend, use formspree.io (free, easy!) -->
+          <div class="contact-form">
+            <p class="form-header">▶ PLAYER_MSG.EXE</p>
+
+            <div class="form-field">
+              <label for="cf-name">// YOUR NAME</label>
+              <input type="text" id="cf-name" placeholder="e.g. Adnan Arif" />
+            </div>
+            <div class="form-field">
+              <label for="cf-email">// YOUR EMAIL</label>
+              <input type="email" id="cf-email" placeholder="you@example.com" />
+            </div>
+            <div class="form-field">
+              <label for="cf-message">// MESSAGE</label>
+              <textarea id="cf-message" rows="4" placeholder="Bug report, feedback, collab idea..."></textarea>
+            </div>
+
+            <button class="btn btn-magenta" onclick="sendEmail()" style="width:100%; justify-content:center;">
+              ▶ SEND MESSAGE
+            </button>
+
+            <p class="form-note">💡 Opens your email app with the message pre-filled.</p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /#main-content -->
+
+
+  <!-- =============================================
+       FOOTER
+  ============================================= -->
+  <footer>
+    <div class="container footer-inner">
+      <span class="footer-logo">LUMIN_PVT_LTD</span>
+      <p class="footer-copy">© 2025 Lumin Private Limited · Pakistan · All rights reserved.</p>
+      <div class="footer-links">
+        <a href="https://play.google.com/store/apps/developer?id=Lumin+Private+Limited" target="_blank">Play Store</a>
+        <a href="https://www.freeprivacypolicy.com/live/6e8a5f9b-8c82-4f8a-83a5-233ac6c18c60" target="_blank">Privacy Policy</a>
+      </div>
+    </div>
+  </footer>
+
+
+  <!-- =============================================
+       JAVASCRIPT
+  ============================================= -->
+  <script>
+
+    /* ── STAR FIELD CANVAS ───────────────────────────
+       Draws animated twinkling stars in the background
+    ── */
+    (function () {
+      const canvas = document.getElementById('star-canvas');
+      const ctx    = canvas.getContext('2d');
+      let stars    = [];
+
+      function resize() {
+        canvas.width  = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+
+      function createStars(count) {
+        stars = [];
+        for (let i = 0; i < count; i++) {
+          stars.push({
+            x:       Math.random() * canvas.width,
+            y:       Math.random() * canvas.height,
+            r:       Math.random() * 1.5 + .3,
+            alpha:   Math.random(),
+            speed:   Math.random() * .005 + .002,
+            color:   Math.random() > .7 ? '#ff006e' : Math.random() > .5 ? '#c8ff00' : '#ffffff'
+          });
+        }
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        stars.forEach(s => {
+          s.alpha += s.speed;
+          if (s.alpha > 1 || s.alpha < 0) s.speed *= -1;
+
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+          ctx.fillStyle = s.color;
+          ctx.globalAlpha = Math.abs(s.alpha);
+          ctx.fill();
+        });
+        ctx.globalAlpha = 1;
+        requestAnimationFrame(draw);
+      }
+
+      resize();
+      createStars(160);
+      draw();
+
+      window.addEventListener('resize', () => {
+        resize();
+        createStars(160);
+      });
+    })();
+
+
+    /* ── FLOATING PIXEL PARTICLES ────────────────────
+       Spawns small colored squares that float upward
+    ── */
+    (function () {
+      const colors = ['#ff006e', '#c8ff00', '#00e5ff'];
+
+      function spawnParticle() {
+        const el = document.createElement('div');
+        el.className = 'pixel-particle';
+        el.style.cssText = `
+          left: ${Math.random() * 100}vw;
+          background: ${colors[Math.floor(Math.random() * colors.length)]};
+          animation-duration: ${6 + Math.random() * 8}s;
+          animation-delay: ${Math.random() * 4}s;
+          width: ${2 + Math.random() * 4}px;
+          height: ${2 + Math.random() * 4}px;
+        `;
+        document.body.appendChild(el);
+
+        // Remove after animation to keep DOM clean
+        setTimeout(() => el.remove(), 14000);
+      }
+
+      // Spawn a particle every 800ms
+      setInterval(spawnParticle, 800);
+    })();
+
+
+    /* ── SMOOTH SCROLL — no # in URL ────────────────── */
+    function scrollToSection(id) {
+      const el = document.getElementById(id);
+      if (el) {
+        const top = el.getBoundingClientRect().top + window.pageYOffset - 80;
+        window.scrollTo({ top: top, behavior: 'smooth' });
+      }
+    }
+
+
+    /* ── MOBILE MENU ─────────────────────────────────── */
+    function toggleMenu() {
+      document.getElementById('navbar').classList.toggle('open');
+    }
+    function closeMenu() {
+      document.getElementById('navbar').classList.remove('open');
+    }
+    document.addEventListener('click', function (e) {
+      const nav = document.getElementById('navbar');
+      if (!nav.contains(e.target)) nav.classList.remove('open');
+    });
+
+
+    /* ── CONTACT FORM → MAILTO ───────────────────────
+       TIP: Replace with Formspree for real backend
+    ── */
+    function sendEmail() {
+      const name    = document.getElementById('cf-name').value.trim();
+      const email   = document.getElementById('cf-email').value.trim();
+      const message = document.getElementById('cf-message').value.trim();
+
+      if (!name || !email || !message) {
+        alert('Please fill in all fields!');
+        return;
+      }
+
+      const subject = encodeURIComponent('Message from ' + name);
+      const body    = encodeURIComponent('Name: ' + name + '\nEmail: ' + email + '\n\nMessage:\n' + message);
+
+      // ── UPDATE EMAIL BELOW IF NEEDED ──
+      window.location.href = 'mailto:arifdreamadnan@gmail.com?subject=' + subject + '&body=' + body;
+    }
+
+
+    /* ── SHOW MAIN (used if Privacy is a separate page)
+       Not needed here since Privacy links externally,
+       but kept for consistency ── */
+    function showMain() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+  </script>
+
+</body>
+</html>
